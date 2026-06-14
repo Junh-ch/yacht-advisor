@@ -6,7 +6,7 @@
 
 ## 데모
 
-👉 **[배포 링크]** *(GitHub Pages URL 입력)*
+👉 **[배포 링크]** *(https://github.com/Junh-ch/yacht-advisor)*
 
 ---
 
