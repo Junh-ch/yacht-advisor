@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#0f1117">
+<title>Yacht 전략 도우미</title>
+<link rel="manifest" href="manifest.json">
+<style>
+:root {
+  --bg: #0f1117;
+  --bg2: #1a1d27;
+  --bg3: #22263a;
+  --border: #2e3350;
+  --text: #e8eaf6;
+  --muted: #7b82b0;
+  --accent: #5c6bc0;
+  --accent2: #7986cb;
+  --green: #66bb6a;
+  --amber: #ffa726;
+  --red: #ef5350;
+  --radius: 12px;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  min-height: 100vh;
+  padding-bottom: 2rem;
+}
+
+/* Loading */
+#loading {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  min-height: 100vh; gap: 1rem;
+}
+.spinner {
+  width: 40px; height: 40px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent2);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+#status { color: var(--muted); font-size: 14px; }
+
+/* App */
+#app { max-width: 480px; margin: 0 auto; padding: 0 16px; }
+.hidden { display: none !important; }
+
+/* Header */
+header {
+  padding: 20px 0 12px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+header .subtitle { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+/* Section */
+.section {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+.section-title {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted); margin-bottom: 12px;
+}
+
+/* Dice */
+#dice-container {
+  display: flex; gap: 8px; justify-content: center;
+  margin-bottom: 12px;
+}
+.die {
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  color: var(--text);
+  cursor: pointer;
+  padding: 6px;
+  transition: border-color 0.15s, transform 0.1s;
+  display: flex; align-items: center; justify-content: center;
+}
+.die:hover { border-color: var(--accent2); transform: translateY(-2px); }
+.die:active { transform: scale(0.95); }
+
+.roll-btn {
+  width: 100%;
+  background: var(--accent);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.roll-btn:hover { background: var(--accent2); }
+.roll-btn:active { opacity: 0.85; }
+
+/* Rolls left */
+.rolls-left-group {
+  display: flex; gap: 8px;
+}
+.rl-btn {
+  flex: 1;
+  background: var(--bg3);
+  border: 1.5px solid var(--border);
+  border-radius: 8px;
+  color: var(--muted);
+  padding: 10px;
+  font-size: 14px; font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.rl-btn.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: white;
+}
+
+/* Recommendation */
+#recommendation {
+  min-height: 80px;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  text-align: center; gap: 6px;
+}
+.rec-label {
+  font-size: 11px; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 1px;
+  color: var(--muted);
+}
+.rec-main {
+  font-size: 22px; font-weight: 700;
+  color: var(--text);
+}
+.rec-sub { font-size: 13px; color: var(--muted); }
+.rec-sub strong { color: var(--green); }
+.die-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 6px;
+  font-size: 16px; font-weight: 700;
+  margin: 2px;
+}
+.die-badge.keep { background: rgba(92,107,192,0.25); color: var(--accent2); border: 1.5px solid var(--accent); }
+.die-badge.disc { background: rgba(239,83,80,0.15); color: var(--red); border: 1.5px solid rgba(239,83,80,0.3); }
+.die-badge.none { background: var(--bg3); color: var(--muted); font-size: 12px; width: auto; padding: 0 10px; border: 1px solid var(--border); }
+.dice-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; }
+.no-rec { color: var(--muted); font-size: 14px; }
+
+/* Scorecard */
+.scorecard-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+.cat-item {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  background: var(--bg3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  cursor: pointer;
+  transition: border-color 0.1s;
+}
+.cat-item:hover { border-color: var(--accent); }
+.cat-item input[type="checkbox"] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent2);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.cat-item label {
+  font-size: 12px; cursor: pointer;
+  flex: 1; user-select: none;
+}
+.cat-item input:checked + label {
+  color: var(--muted);
+  text-decoration: line-through;
+}
+
+.upper-sum-row {
+  display: flex; align-items: center;
+  gap: 10px; margin-top: 10px;
+  padding: 10px;
+  background: var(--bg3);
+  border-radius: 8px;
+  border: 1px solid var(--border);
+}
+.upper-sum-row label { font-size: 12px; color: var(--muted); flex: 1; }
+.upper-sum-row input[type="number"] {
+  width: 64px;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font-size: 14px; font-weight: 600;
+  padding: 4px 8px;
+  text-align: center;
+}
+.upper-badge {
+  font-size: 11px; font-weight: 700;
+  padding: 2px 8px; border-radius: 4px;
+  background: rgba(255,167,38,0.15);
+  color: var(--amber);
+}
+
+/* Footer */
+footer {
+  text-align: center;
+  padding: 16px 0 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+</style>
+</head>
+<body>
+
+<div id="loading">
+  <div class="spinner"></div>
+  <div id="status">초기화 중...</div>
+</div>
+
+<div id="app" class="hidden">
+  <header>
+    <div>
+      <h1>🎲 Yacht 전략 도우미</h1>
+      <div class="subtitle">최적 전략 (MDP 기반)</div>
+    </div>
+  </header>
+
+  <!-- 추천 결과 -->
+  <div class="section">
+    <div class="section-title">추천</div>
+    <div id="recommendation">
+      <p class="no-rec">주사위를 설정하세요</p>
+    </div>
+  </div>
+
+  <!-- 주사위 입력 -->
+  <div class="section">
+    <div class="section-title">주사위 (클릭하여 변경)</div>
+    <div id="dice-container"></div>
+    <button class="roll-btn" id="dice-roll-btn">🎲 랜덤 굴림</button>
+  </div>
+
+  <!-- 남은 굴림 횟수 -->
+  <div class="section">
+    <div class="section-title">남은 굴림 횟수</div>
+    <div class="rolls-left-group">
+      <button class="rl-btn" id="rl-0">0회<br><small>기록만 가능</small></button>
+      <button class="rl-btn active" id="rl-2">2회<br><small>첫 굴림 직후</small></button>
+      <button class="rl-btn" id="rl-1">1회<br><small>한 번 더 가능</small></button>
+    </div>
+  </div>
+
+  <!-- 스코어카드 -->
+  <div class="section">
+    <div class="section-title">스코어카드 (체크 = 이미 사용)</div>
+    <div class="scorecard-grid">
+      <div class="cat-item"><input type="checkbox" id="cat-0"><label for="cat-0">Ones (1×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-6"><label for="cat-6">Choice (합산)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-1"><label for="cat-1">Twos (2×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-7"><label for="cat-7">Poker (4개이상 합산)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-2"><label for="cat-2">Threes (3×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-8"><label for="cat-8">Full House (합산)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-3"><label for="cat-3">Fours (4×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-9"><label for="cat-9">Small Straight (15)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-4"><label for="cat-4">Fives (5×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-10"><label for="cat-10">Large Straight (30)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-5"><label for="cat-5">Sixes (6×개수)</label></div>
+      <div class="cat-item"><input type="checkbox" id="cat-11"><label for="cat-11">Yacht (50)</label></div>
+    </div>
+
+    <div class="upper-sum-row">
+      <label>Upper 누적 점수 (Ones~Sixes 합산)</label>
+      <span class="upper-badge">보너스 63+</span>
+      <input type="number" id="upper-sum" min="0" max="63" value="0">
+    </div>
+  </div>
+
+  <footer>기대 점수 191.77점 최적 전략 · 오프라인 지원</footer>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>

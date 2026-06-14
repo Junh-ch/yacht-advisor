@@ -1,0 +1,13 @@
+{
+  "name": "Yacht 전략 도우미",
+  "short_name": "Yacht",
+  "description": "Yacht 다이스 게임 최적 전략 추천",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0f1117",
+  "theme_color": "#0f1117",
+  "icons": [
+    {"src": "icon-192.png", "sizes": "192x192", "type": "image/png"},
+    {"src": "icon-512.png", "sizes": "512x512", "type": "image/png"}
+  ]
+}
